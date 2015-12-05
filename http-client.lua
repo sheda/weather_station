@@ -42,16 +42,16 @@ function http.sendContent(method, url, contentToSend, contentType, callWithData)
         print(req);
         conn:send(req);
 
-        if contentToSend ~= nil then
-            if contentType == nil then
-                contentType = "application/x-www-form-urlencoded";
-            end
-            conn:send("Content-Type: " .. contentType .. "\r\n");
-            conn:send("Content-Length: " .. string.len(contentToSend) .. "\r\n\r\n");
-            conn:send(contentToSend);
-        else
-            conn:send("\r\n");
-        end
+        --if contentToSend ~= nil then
+        --    if contentType == nil then
+        --        contentType = "application/x-www-form-urlencoded";
+        --    end
+        --    conn:send("Content-Type: "..contentType.."\r\n");
+        --    conn:send("Content-Length: "..string.len(contentToSend).."\r\n\r\n");
+        --    conn:send(contentToSend);
+        --else
+        --    conn:send("\r\n");
+        --end
         
     end)
     local data = {};
