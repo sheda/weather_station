@@ -35,9 +35,12 @@ function http.sendContent(method, url, contentToSend, contentType, callWithData)
     end
 
     local conn=net.createConnection(net.TCP, false);
-    conn:on("connection", function(conn) 
-        conn:send(method.." "..components.pathAndQueryString.." HTTP/1.0\r\nHost: "..components.host.."\r\n"
-            .."Accept: */*\r\nConnection: close\r\n");
+    conn:on("connection", function(conn)
+        print("OnConnection");
+        --local req = method.." "..components.pathAndQueryString.." HTTP/1.0\r\nHost: "..components.host.."\r\n".."Accept: */*\r\nConnection: close\r\n";
+        local req = method.." "..components.pathAndQueryString.." HTTP/1.0\r\nHost: "..components.host.."\r\n".."Accept: */*\r\nConnection: close\r\n\r\n";
+        print(req);
+        conn:send(req);
 
         if contentToSend ~= nil then
             if contentType == nil then
@@ -53,6 +56,8 @@ function http.sendContent(method, url, contentToSend, contentType, callWithData)
     end)
     local data = {};
     conn:on("receive", function(conn, pl)
+        print("OnReceive");
+        print("payload:"..pl);
         if (data.status) then -- already parsed first chunk, assuming done with headers
             data.content = data.content..pl; -- todo: consider creating a table of strings and concatenating at the end
         else -- parse status and headers, start of body
@@ -65,7 +70,8 @@ function http.sendContent(method, url, contentToSend, contentType, callWithData)
         pl = nil;
         collectgarbage();
     end)
-    conn:on("disconnection", function() 
+    conn:on("disconnection", function()
+        print("OnDisconnection");
         callWithData(data);
         data = nil;
         collectgarbage();
@@ -77,12 +83,17 @@ function http.getJson(url, callback)
     print("fetching "..url);
     http.getContent(url, function(data) 
         if (data.status == 200 or data.status == "200") then
+            local idata = data.content or "?"
+            print("dataContent"..idata);
             json = cjson.decode(data.content);
             data = nil;
             collectgarbage();
             callback(json);
         else
-            print("status "..data.status.." from "..url.."\n"..data.content);
+            local istatus = data.status or "?";
+            local iurl = url or "?";
+            local icontent = data.content or "?";
+            print("status "..istatus.." from "..iurl.."\n"..icontent);
             return nil
         end
     end)
