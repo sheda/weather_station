@@ -60,5 +60,43 @@ function getWeather()
     end)
 end
 
-s.init()
+-- Set Pin2 to output(led user)
+pin2=4
+gpio.mode(pin2,gpio.OUTPUT)
+
+-- Connect Wifi
+local SSID, PASS, WOEID = dofile("fs_settings.lua").read();
+print("Setting STATION mode");
+print("SSID:"..SSID);
+print("PASS:"..PASS);
+wifi.setmode(wifi.STATION);
+wifi.sta.config(SSID,PASS);
+wifi.sta.autoconnect(1);
+
+local led_val=0;
+tmr.alarm (1, 800, 1, function ( )
+  if (wifi.sta.getip() == nil) then
+     if(led_val == 0)then
+      gpio.write(pin2, gpio.HIGH);
+      led_val=1;
+     else
+      gpio.write(pin2, gpio.LOW);
+      led_val=0;
+     end
+     print ("Waiting for Wifi connection")
+  else
+     tmr.stop (1)
+     print ("Config done, IP is " .. wifi.sta.getip ( ))
+  end
+end)
+
+led_val=nil;
+SSID=nil;
+PASS=nil;
+WOEID=nil;
+print("Connected. IP: ", wifi.sta.getip())
+print(node.heap())
+
+
+--s.init()
 tmr.alarm(2, 10*1000, 1, getWeather ) -- 5*60*1000 = every 5 minutes
