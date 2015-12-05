@@ -46,7 +46,7 @@ srv:listen(80,function(conn)
     buf = buf..'<form action="t">';
     buf = buf..'<p>SSID <INPUT TYPE="text" NAME="ssid" VALUE='..SSID..' SIZE=10>&nbsp;</p>';
     buf = buf..'<p>PASS <INPUT TYPE="text" NAME="pass" VALUE='..PASS..' SIZE=10>&nbsp;</p>';
-    buf = buf..'<p>WOEID <INPUT TYPE="text" NAME="woeid" VALUE='..WOEID..' SIZE=10>&nbsp;</p>';
+    buf = buf..'<p>WOEID <INPUT TYPE="text" NAME="woeid" VALUE='..WOEID..' SIZE=10>&nbsp; (<a href="http://woeid.rosselliot.co.nz">find your woeid here</a>)</p>';
     buf = buf..'<p><input type="submit" value="Submit">&nbsp;</p>';
     buf = buf..'</form>';
     
