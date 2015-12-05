@@ -51,6 +51,7 @@ function toServoRange(code)
 end
 
 function getWeather()
+    y = require "yahoo-weather"
     y.fetch(function(Temp, Code, Text)
         iTemp = Temp or "?"
         iCode = Code or "?"
@@ -58,6 +59,8 @@ function getWeather()
         print(iText)
         toServoRange(iCode)
     end)
+    y=nil;
+    collectgarbage()
 end
 
 -- Set Pin2 to output(led user)
