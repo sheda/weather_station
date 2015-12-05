@@ -1,11 +1,14 @@
 globals = require "globals"
---[[tmr.alarm(0,20,1,function() -- 50Hz 
+-- 50 hz
+--[[
+tmr.alarm(0,20,1,function()
     if globals.servo.value then
         gpio.write(globals.servo.pin, gpio.HIGH)
         tmr.delay(globals.servo.value)
         gpio.write(globals.servo.pin, gpio.LOW)
     end
-end)--]]
+end)
+--]]
 local s = {}
 function s.init()
   pwm.setup(globals.servo.pin, 50, 512); -- 50hz - 50%(range 0-1023)
