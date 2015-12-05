@@ -1,26 +1,38 @@
-y = require "yahoo-weather"
 s = require "servo"
 g = require "globals"
 
-function check(i, list)
-  for var in list do
+function list_iter (t)
+  local i = 0
+  local n = table.getn(t)
+  return function ()
+           i = i + 1
+           if i <= n then return t[i] end
+           end
+end
+
+function check(i, table)
+  local iter = list_iter(table)
+  for var in iter do
      if var == i then
       print(var)
+      iter=nil;
       return 1
      end
   end
+  iter=nil;
   return nil
 end
 
 -- yahoo codes -- available at https://developer.yahoo.com/weather/documentation.html
-storm = {0,1,2,3,4,19,37,38,39,40,41,42,43,45,46,47};
-snow  = {5,6,7,8,9,10,13,14,15,16,18};
-rain  = {11,12,17,35};
-fog   = {20,21,22,25};
-wind  = {23,24};
-cloud = {26,27,28,29,30,44};
-fair  = {31,32,33,34,36};
 function toServoRange(code)
+    local storm = {"0","1","2","3","4","19","37","38","39","40","41","42","43","45","46","47"};
+    local snow  = {"5","6","7","8","9","10","13","14","15","16","18"};
+    local rain  = {"11","12","17","35"};
+    local fog   = {"20","21","22","25"};
+    local wind  = {"23","24"};
+    local cloud = {"26","27","28","29","30","44"};
+    local fair  = {"31","32","33","34","36"};
+   
     if check(code, storm) then
       print("storm");
       g.servo.value = 0;
@@ -47,7 +59,7 @@ function toServoRange(code)
       g.servo.value = 896;
       -- remaining reserved for special
     end
-    pwm.setduty(pin, g.servo.value);
+    pwm.setduty(4, g.servo.value);
 end
 
 function getWeather()
@@ -64,8 +76,9 @@ function getWeather()
 end
 
 -- Set Pin2 to output(led user)
-pin2=4
-gpio.mode(pin2,gpio.OUTPUT)
+pin2=4;
+gpio.mode(pin2,gpio.OUTPUT);
+g.servo.pin=3;
 
 -- Connect Wifi
 local SSID, PASS, WOEID = dofile("fs_settings.lua").read();
@@ -93,6 +106,7 @@ tmr.alarm (1, 800, 1, function ( )
   end
 end)
 
+g.woeid=WOEID;
 led_val=nil;
 SSID=nil;
 PASS=nil;
@@ -100,6 +114,6 @@ WOEID=nil;
 print("Connected. IP: ", wifi.sta.getip())
 print(node.heap())
 
-
---s.init()
-tmr.alarm(2, 10*1000, 1, getWeather ) -- 5*60*1000 = every 5 minutes
+s.init();
+getWeather();
+tmr.alarm(2, 60*1000, 1, getWeather ) -- 5*60*1000 = every 5 minutes
