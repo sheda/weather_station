@@ -47,7 +47,6 @@ function toServoRange(code)
     local cloud = {"26","27","28","29","30","44"};
     local fair  = {"31","32","33","34","36"};
 
-   
     if check(code, storm) then
       print("storm");
       g.servo.value = serv_pwm["storm"];
@@ -73,7 +72,12 @@ function toServoRange(code)
       print("Boot");
       g.servo.value = serv_pwm["boot"];
     end
-    pwm.setduty(g.servo.pin, g.servo.value);
+    -- Handle WTF mode
+    if (g.poscnt.value <= 0) then
+      pwm.setduty(g.servo.pin, g.servo.value);
+    else
+      g.poscnt.value = g.poscnt.value - 1;
+    end
 end
 
 function getWeather()

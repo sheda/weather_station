@@ -10,6 +10,7 @@ local cmqtt = {}
 
 -- LEDs Actions
 function cmqtt.led_wr(pl)
+ local pl = pl or "off"
  if(pl=="on")then
   g.led.value = 1;
   gpio.write(g.led.pin,gpio.HIGH);
@@ -22,25 +23,45 @@ function cmqtt.led_rd()
  return g.led.value;
 end
 
+function cmqtt.wtf(act, pl)
+ local pl = pl or "0";
+ local ipl = tonumber(pl);
+ if(act=="set")then
+  g.poscnt.value = ipl;
+  g.servo.value = 121;
+  pwm.setduty(g.servo.pin, 121); -- refer to weatherStation
+ elseif(act == "clr")then
+  g.poscnt.value = 0;
+  if(g.servo.value==121)then
+    pwm.setduty(g.servo.pin, 107); -- refresh servo to boot value if not already refreshed
+  else
+    pwm.setduty(g.servo.pin, g.servo.value); -- refresh servo to current weather value
+  end
+ end
+end
+
 -- When message are received
 function cmqtt.mqtt_mess(conn, topic, data)
- local idata = data or "err"
- print(topic..":"..idata)
+ local idata = data or "";
+ print(topic..":"..idata);
  
  if topic == "/sheda/reset" then -- general reset
   node.restart()
  elseif topic == "/sheda/reset/"..clientID then -- node specific reset
   node.restart()
  end
- 
- print("x /sheda/"..clientID.."/WTF/set");
- 
- if (topic == "/sheda/"..clientID.."/WTF/set") then
-  cmqtt.led_wr(idata)
+ if (topic == "/sheda/"..clientID.."/Led/set") then
+  cmqtt.led_wr(data)
  end
- if topic == ("/sheda/"..clientID.."/WTF/get") then
+ if topic == ("/sheda/"..clientID.."/Led/get") then
   m:publish("/sheda/node", '{ "status": "'..cmqtt.led_rd()..'" }', 0, 0, function(conn)end)
  end  
+ if (topic == "/sheda/"..clientID.."/WTF/set") then
+  cmqtt.wtf("set",data)
+ end
+ if topic == ("/sheda/"..clientID.."/WTF/clr") then
+  cmqtt.wtf("clr","0")
+ end
 end
 
 -- initilisation
