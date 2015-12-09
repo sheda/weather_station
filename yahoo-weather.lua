@@ -6,7 +6,7 @@ local url = "http://query.yahooapis.com/v1/public/yql?q=";
       url = url.."%20and%20u%3D%27c%27&format=json";
 local y = {}
 function y.fetch(callback)
-    httpClient.getJson(url, function(json) 
+    httpClient.getJson(url, function(json)
         local Temp = json.query.results.channel.item.condition.temp;
         local Code = json.query.results.channel.item.condition.code;
         local Text = json.query.results.channel.item.condition.text;
