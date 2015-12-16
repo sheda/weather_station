@@ -1,16 +1,14 @@
 s = require "servo"
 g = require "globals"
 q = require "cmqtt"
-
-local serv_pwm = {storm=30, --p90
-                 snow=41, --p67
-                 rain=52, --p45
-                 fog=63, --p22
-                 wind=74,   --0
-                 cloud=85, --m22
-                 fair=96, --m45
-                 boot=107,--m67
-                 wtf=121};--m90
+local serv_pwm = {storm=112,--p78.5
+                  snow=101, --p56
+                  rain=90,  --p33.5
+                  wind=79,  --p11
+                  cloud=68, --11
+                  sun=57,   --m33.5
+                  wifi=46,  --m56
+                  poke=35}; --m78.5
 
 function list_iter (t)
   local i = 0
@@ -42,10 +40,9 @@ function toServoRange(code)
     local storm = {"0","1","2","3","4","19","37","38","39","40","41","42","43","45","46","47"};
     local snow  = {"5","6","7","8","9","10","13","14","15","16","18"};
     local rain  = {"11","12","17","35"};
-    local fog   = {"20","21","22","25"};
-    local wind  = {"23","24"};
+    local wind   = {"20","21","22","23","24","25"};
     local cloud = {"26","27","28","29","30","44"};
-    local fair  = {"31","32","33","34","36"};
+    local sun  = {"31","32","33","34","36"};
 
     if check(code, storm) then
       print("storm");
@@ -56,21 +53,18 @@ function toServoRange(code)
     elseif check(code, rain) then
       print("rain");
       g.servo.value = serv_pwm["rain"];
-    elseif check(code, fog) then
-      print("fog");
-      g.servo.value = serv_pwm["fog"];
     elseif check(code, wind) then
       print("wind");
       g.servo.value = serv_pwm["wind"];
     elseif check(code, cloud) then
       print("cloud");
       g.servo.value = serv_pwm["cloud"];
-    elseif check(code, fair) then
-      print("fair");
-      g.servo.value = serv_pwm["fair"];
+    elseif check(code, sun) then
+      print("sun");
+      g.servo.value = serv_pwm["sun"];
     else
-      print("Boot");
-      g.servo.value = serv_pwm["boot"];
+      print("wifi");
+      g.servo.value = serv_pwm["wifi"];
     end
     -- Handle WTF mode
     if (g.poscnt.value <= 0) then
@@ -96,9 +90,12 @@ end
 -- Set Pin2 to output(led user)
 gpio.mode(g.servo.pin,gpio.OUTPUT);
 
+-- Get servo positions
+serv_pwm["storm"], serv_pwm["snow"], serv_pwm["rain"], serv_pwm["wind"], serv_pwm["cloud"], serv_pwm["sun"], serv_pwm["wifi"], serv_pwm["poke"] = dofile("fs_position.lua").read();
+g.poke_position = serv_pwm["poke"];
 -- init servo module
 s.init();
-g.servo.value = serv_pwm["boot"];
+g.servo.value = serv_pwm["wifi"];
 pwm.setduty(g.servo.pin, g.servo.value);
 
 -- Connect Wifi
