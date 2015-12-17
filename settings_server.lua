@@ -42,19 +42,21 @@ wifi.ap.setip(cfg);
 local led_val=0;
 while ((wifi.ap.getip() == "0.0.0.0") or (wifi.ap.getip() == nil)) do
    if(led_val == 0)then
-    gpio.write(pin2, gpio.HIGH);
+    gpio.write(g.servo.pin, gpio.HIGH);
     led_val=1;
    else
-    gpio.write(pin2, gpio.LOW);
+    gpio.write(g.servo.pin, gpio.LOW);
     led_val=0;
   end
   print("Not yet connected, waiting...");
   tmr.delay(1000000); -- 1sec
 end
 cfg=nil
-led_val=nil;
 print("Connected. IP: ", wifi.ap.getip())
 print(node.heap())
+
+gpio.write(pin2, gpio.HIGH);
+led_val=1;
 
 srv=net.createServer(net.TCP)
 srv:listen(80,function(conn)
