@@ -32,6 +32,89 @@ function check(i, table)
   return nil
 end
 
+level=0;
+function led_glow(top, bot, mode, speedu, speedd)
+      if (g.led.pol == 0) and ((mode == 0) or (mode == 1)) then
+        level=level+speedu;
+      elseif (g.led.pol == 1) and ((mode == 0) or (mode == 2)) then
+        level=level-speedd;
+      else
+        if (mode == 1) then
+          g.led.pol=0;
+        else
+          g.led.pol=1;
+        end
+      end
+      if level >= top then
+        if mode == 0 then -- /\/\
+          level = top;
+          g.led.pol=1;
+        elseif mode == 1 then --/|/|
+          level = bot;
+          g.led.pol=0;
+        end
+      elseif level <= bot then
+        if mode == 0 then -- /\/\
+          g.led.pol=0;
+          level = bot;
+        elseif mode == 2 then --|\|\
+          level = bot; 
+          g.led.pol=0;
+        end
+      end
+      --print(level)
+      pwm.setduty(g.led.pin, level);
+end
+
+function led_blink(freq)
+      if g.led.index%freq == 0 then
+        g.led.pol=1;
+        pwm.setduty(g.led.pin, 1023);
+      else
+        g.led.pol=0;
+        pwm.setduty(g.led.pin, 0);
+      end
+end
+
+function led_flash(pos1, pos2, pos3, pos4, pos5, pos6)
+      if ((g.led.index == pos1) or (g.led.index == pos2) or
+          (g.led.index == pos3) or (g.led.index == pos4) or
+          (g.led.index == pos5) or (g.led.index == pos6)) then
+        pwm.setduty(g.led.pin, 1023);
+      else
+        pwm.setduty(g.led.pin, 0);
+      end
+end
+
+function led_server ()
+    if (g.led.mode == 1) then
+      --print("led_storm");
+      led_flash(0, 2, 20, 22, 24, 70);
+    elseif (g.led.mode == 2) then
+      --print("led_snow");
+      led_flash(0, 16, 33, 51, 66, 81);
+    elseif (g.led.mode == 3) then
+      --print("led_rain");
+      led_blink(1);
+    elseif (g.led.mode == 4) then
+      --print("led_wind");
+      led_glow(1023,0,1,25,25);
+    elseif (g.led.mode == 5) then
+      --print("led_cloud");
+      led_glow(1023,980,0,25,25);
+    elseif (g.led.mode == 6) then
+      --print("led_sun");
+      led_glow(1023,0,0,25,25);
+    elseif (g.led.mode == 7) then
+      --print("led_coquin");
+      led_blink(2);
+    end
+    g.led.index = g.led.index +1;
+    if (g.led.index >= 100) then
+      g.led.index = 0;
+    end
+end
+
 -- yahoo codes -- available at https://developer.yahoo.com/weather/documentation.html
 -- Servo driver from 1% to 10% theorically(T=20ms, pwm from 1000us-2000us)
 -- In pratic use abaque for PWM value according to angles
@@ -46,24 +129,31 @@ function toServoRange(code)
 
     if check(code, storm) then
       print("storm");
+      g.led.mode=1;
       g.servo.value = serv_pwm["storm"];
     elseif check(code, snow) then
       print("snow");
+      g.led.mode=2;
       g.servo.value = serv_pwm["snow"];
     elseif check(code, rain) then
       print("rain");
+      g.led.mode=3;
       g.servo.value = serv_pwm["rain"];
     elseif check(code, wind) then
       print("wind");
+      g.led.mode=4;
       g.servo.value = serv_pwm["wind"];
     elseif check(code, cloud) then
       print("cloud");
+      g.led.mode=5;
       g.servo.value = serv_pwm["cloud"];
     elseif check(code, sun) then
       print("sun");
+      g.led.mode=6;
       g.servo.value = serv_pwm["sun"];
     else
       print("wifi");
+      g.led.mode=7;
       g.servo.value = serv_pwm["wifi"];
     end
     -- Handle WTF mode
@@ -111,16 +201,16 @@ local led_val=0;
 tmr.alarm (1, 800, 1, function ( )
   if (wifi.sta.getip() == nil) then
      if(led_val == 0)then
-      gpio.write(pin2, gpio.HIGH);
+      gpio.write(g.servo.pin, gpio.HIGH);
       led_val=1;
      else
-      gpio.write(pin2, gpio.LOW);
+      gpio.write(g.servo.pin, gpio.LOW);
       led_val=0;
      end
-     print ("Waiting for Wifi connection")
+     print ("Waiting for Wifi connection");
   else
-     tmr.stop (1)
-     print ("Config done, IP is " .. wifi.sta.getip ( ))
+     tmr.stop (1);
+     print ("Config done, IP is " .. wifi.sta.getip ( ));
   end
 end)
 
@@ -138,3 +228,8 @@ q.init();
 -- routine for weather
 getWeather();
 tmr.alarm(2, 60*1000, 1, getWeather ) -- 5*60*1000 = every 5 minutes
+
+-- routine for led
+pwm.setup(g.led.pin, 50, 512); -- 50hz - 50%(range 0-1023)
+pwm.start(g.led.pin); 
+tmr.alarm(1, 300, 1, led_server ) -- 500 = every 500 ms

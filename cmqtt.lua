@@ -16,6 +16,7 @@ function cmqtt.wtf(act, pl)
   g.poscnt.value = ipl;
   g.servo.value = g.poke_position;
   pwm.setduty(g.servo.pin, g.poke_position); -- refer to weatherStation
+  g.led.mode=7;
  end
 end
 

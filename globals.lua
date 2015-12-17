@@ -3,7 +3,9 @@ local globals = {
     pos_poke = 35,         -- Poke position
     poscnt = {value = 0},  -- If not Zere will keep current position
     led = {value = 0,      -- 0 - 1
-           mode = 0,
+           mode = 0,       -- mode
+           index = 0,      -- position in the mode
+           pol = 0,        -- polarity in the mode
            pin = 4},       -- GPIO2
     servo = { value = 74,  -- range from 0-1023
               pin = 3}     -- GPIO0
