@@ -59,25 +59,28 @@ Your friends can poke you on throught using MQTT client. This rely on a broker t
 The pin header on the right of the board (switch is on the left) is separated as follow from top to bottom:
 
 **Servo:**
+
 * 1 : GND  (brown wire)
 * 2 : 3.3V (red wire)
 * 3 : DATA (yellow wire)
 
-**UART 3v3 (9600N1):**
+**UART 3v3 (9600N1): /!\ Beware of using TTL uart it may destroy the esp8266, use "voltage divisor bridge" before the pin 4**
 
-**/!\ Beware of using TTL uart it may destroy the esp8266, use "voltage divisor bridge" before the pin 4**
 * 4: RX (connect TX of your UART adapter) 
 * 5: TX (connect RX of your uart adapter)
 * 6: GND (connect GND of your uart adapter)
 
 **Power Supply(DC 5v-15v max):**
-* 7: VCC (connect AC-DC adapter +)
-* 8: GND (connect AC-DC adapter -)
 
-**/!\ The AC-DC came with 3pins, the one not connected should be outside the board and **NOT** connected on pin 6**
-**/!\ The Power regulator may be **HOT** according to workload should not touch it.**
+- 7: VCC (connect AC-DC adapter +)
+- 8: GND (connect AC-DC adapter -)
 
-Electronic circuit for Picture Frame Weather Forcast by Sheda
+**Warnings:**
+
+- **/!\ The AC-DC came with 3pins, the one not connected should be outside the board and NOT connected on pin 6**
+- **/!\ The Power regulator may be HOT according to workload should not touch it.**
+
+**Electronic circuit for Picture Frame Weather Forcast by Sheda**
 (realised on asciiflow.com)
 
         3.3V
@@ -91,11 +94,11 @@ Electronic circuit for Picture Frame Weather Forcast by Sheda
          |     +++                                        3.3V    A +----1----> GND(Brown)
       +--+--+ C |                                         +++         |     |
       |     +---+---------X                                |      B +----2----> Pwr(Red)
-Servo | XXX |              1              ESP8266-1        |          |     |
+      | XXX |              1              ESP8266-1        |          |     |
       |X   X|     jumper0 X---+       Connector top View   |      C +----3----> Data(yellow)
       |X +---->            2  |    D   +------+------+     |          |     |
       |X   X|             X   |    +---+ RX   |  3.3 +-----+          +-----+
-      | XXX |             +   |        |      |      |     |          |UART |
+      | XXX | Servo       +   |        |      |      |     |          |UART |
       +-----+             |   |        +-------------+     |      D <----4----+ TX uart  /!\ If 5v add
          |A               |   +--------+ GPIO0|  NC  |     |          |     |                 divisor bridge
         +-+              +++           |      |      |     |      E +----5----> RX uart
