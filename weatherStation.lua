@@ -58,7 +58,7 @@ function led_glow(top, bot, mode, speedu, speedd)
           g.led.pol=0;
           level = bot;
         elseif mode == 2 then --|\|\
-          level = bot; 
+          level = bot;
           g.led.pol=0;
         end
       end
@@ -177,12 +177,27 @@ function getWeather()
     collectgarbage()
 end
 
+function main()
+  -- mqtt
+  q.init();
+
+  -- routine for weather
+  getWeather();
+  tmr.alarm(2, 60*1000, 1, getWeather ) -- 5*60*1000 = every 5 minutes
+
+  -- routine for led
+  pwm.setup(g.led.pin, 50, 512); -- 50hz - 50%(range 0-1023)
+  pwm.start(g.led.pin);
+  tmr.alarm(1, 300, 1, led_server ) -- 500 = every 500 ms
+end
+
 -- Set Pin2 to output(led user)
 gpio.mode(g.servo.pin,gpio.OUTPUT);
 
 -- Get servo positions
 serv_pwm["storm"], serv_pwm["snow"], serv_pwm["rain"], serv_pwm["wind"], serv_pwm["cloud"], serv_pwm["sun"], serv_pwm["wifi"], serv_pwm["poke"] = dofile("fs_position.lua").read();
 g.poke_position = serv_pwm["poke"];
+
 -- init servo module
 s.init();
 g.servo.value = serv_pwm["wifi"];
@@ -190,12 +205,16 @@ pwm.setduty(g.servo.pin, g.servo.value);
 
 -- Connect Wifi
 local SSID, PASS, WOEID = dofile("fs_settings.lua").read();
+g.woeid=WOEID;
 print("Setting STATION mode");
 print("SSID:"..SSID);
 print("PASS:"..PASS);
 wifi.setmode(wifi.STATION);
 wifi.sta.config(SSID,PASS);
 wifi.sta.autoconnect(1);
+SSID=nil;
+PASS=nil;
+WOEID=nil;
 
 local led_val=0;
 tmr.alarm (1, 800, 1, function ( )
@@ -210,26 +229,8 @@ tmr.alarm (1, 800, 1, function ( )
      print ("Waiting for Wifi connection");
   else
      tmr.stop (1);
+     gpio.write(g.led.pin, gpio.LOW);
+     main();
      print ("Config done, IP is " .. wifi.sta.getip ( ));
   end
 end)
-
-g.woeid=WOEID;
-led_val=nil;
-SSID=nil;
-PASS=nil;
-WOEID=nil;
-print("Connected. IP: ", wifi.sta.getip())
-print(node.heap())
-
--- mqtt
-q.init();
-
--- routine for weather
-getWeather();
-tmr.alarm(2, 60*1000, 1, getWeather ) -- 5*60*1000 = every 5 minutes
-
--- routine for led
-pwm.setup(g.led.pin, 50, 512); -- 50hz - 50%(range 0-1023)
-pwm.start(g.led.pin); 
-tmr.alarm(1, 300, 1, led_server ) -- 500 = every 500 ms
