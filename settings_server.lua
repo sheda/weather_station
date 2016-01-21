@@ -1,3 +1,15 @@
+local function unescape(s)
+  local rt, i, len = "", 1, #s
+  s = s:gsub('+', ' ')
+  local j, xx = s:match('()%%(%x%x)', i)
+  while j do
+    rt = rt .. s:sub(i, j-1) .. string.char(tonumber(xx,16))
+    i = j+3
+    j, xx = s:match('()%%(%x%x)', i)
+  end
+ return rt .. s:sub(i)
+end
+
 print("Mode Setting Server");
 s = require "servo"
 g = require "globals"
@@ -71,18 +83,24 @@ srv:listen(80,function(conn)
       end
       if((_GET.ssid ~= nil) and (_GET.pass ~= nil) and (_GET.woeid ~= nil)) then
         print("WEB SSID:".._GET.ssid);
+        local ssid_dec = unescape(_GET.ssid);
+        print("WEB SSID_DEC:"..ssid_dec);
+
         print("WEB PASS:".._GET.pass);
+        local pass_dec = unescape(_GET.pass);
+        print("WEB PASS_DEC:"..pass_dec);
+
         print("WEB WOEID:".._GET.woeid);
-        dofile("fs_settings.lua").write(_GET.ssid, _GET.pass, _GET.woeid);
-      elseif((_GET.storm ~= nil) and (_GET.snow ~= nil) and (_GET.rain ~= nil) and (_GET.wind ~= nil) and (_GET.cloud ~= nil) and (_GET.sun ~= nil) and (_GET.wifi ~= nil) and (_GET.poke ~= nil)) then 
+        dofile("fs_settings.lua").write(ssid_dec, pass_dec, _GET.woeid);
+      elseif((_GET.storm ~= nil) and (_GET.snow ~= nil) and (_GET.rain ~= nil) and (_GET.wind ~= nil) and (_GET.cloud ~= nil) and (_GET.sun ~= nil) and (_GET.wifi ~= nil) and (_GET.poke ~= nil)) then
         dofile("fs_position.lua").write(tonumber(_GET.storm), tonumber(_GET.snow), tonumber(_GET.rain), tonumber(_GET.wind), tonumber(_GET.cloud), tonumber(_GET.sun), tonumber(_GET.wifi), tonumber(_GET.poke));
-      elseif((_GET.position ~= nil)) then 
+      elseif((_GET.position ~= nil)) then
         g.servo.value = tonumber(_GET.position);
         pwm.setduty(g.servo.pin, g.servo.value);
       end
     end
     print(node.heap())
- 
+
     local SSID="";
     local PASS="";
     local WOEID="";
@@ -114,12 +132,12 @@ srv:listen(80,function(conn)
     buf = buf..'<p>POKE <INPUT TYPE="text" NAME="poke" VALUE='..POKE..' SIZE=10>&nbsp;</p>';
     buf = buf..'<p><input type="submit" value="Submit">&nbsp;</p>';
     buf = buf..'</form>';
-    
+
     buf = buf..'<form action="a">';
     buf = buf..'<p>POSITION<INPUT TYPE="text" NAME="position" VALUE='..g.servo.value..' SIZE=10>&nbsp;</p>';
     buf = buf..'<p><input type="submit" value="Submit">&nbsp;</p>';
     buf = buf..'</form>';
-    
+
     client:send(buf);
     client:close();
     buf=nil;
