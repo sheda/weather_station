@@ -220,10 +220,10 @@ local led_val=0;
 tmr.alarm (1, 800, 1, function ( )
   if (wifi.sta.getip() == nil) then
      if(led_val == 0)then
-      gpio.write(g.servo.pin, gpio.HIGH);
+      gpio.write(g.led.pin, gpio.HIGH);
       led_val=1;
      else
-      gpio.write(g.servo.pin, gpio.LOW);
+      gpio.write(g.led.pin, gpio.LOW);
       led_val=0;
      end
      print ("Waiting for Wifi connection");
@@ -232,5 +232,6 @@ tmr.alarm (1, 800, 1, function ( )
      gpio.write(g.led.pin, gpio.LOW);
      main();
      print ("Config done, IP is " .. wifi.sta.getip ( ));
+     led_val=nil;
   end
 end)
