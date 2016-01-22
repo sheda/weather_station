@@ -1,10 +1,12 @@
-# Picture Frame - Weather Stations (by Sheda 2016)
-This project is covered by Licenc GPL v2.0
+# Picture Frame - Weather Stations (by Sheda 2016) on ESP8266 NodeMcu
+This project is covered by Licence GPL v2.0
 
 This weather station connect to yahoo weather forecast throught wifi connection and display the forecast for a setted city through given WOEID.
 The weather forecast is displayed through 6 pictograms (storm, snow, rain, wind, cloud, sun) driven with a servo motor.
 This also has got a poke function working through MQTT protocol using a broker.
 So this rely on a public third party external service that may experience unexpected outage.
+
+The whole project is running over [NODE-MCU](https://github.com/nodemcu/nodemcu-firmware) with some additionals module see part 4 for more info about requirement.
 
 ---
 
@@ -16,10 +18,10 @@ This will create a wifi hotspot:
  * SSID: "SHEDA_CFG"
  * PSWD: 12345678
 
-Once connected you will get IP "192.168.4.2".
+Once connected you will get IP "192.168.4.2"
 
 ### Setting instruction:
-This server allow you to set SSID, PASSWORD of your internet connection, and the WOEID. 
+This server allow you to set SSID, PASSWORD of your internet connection, and the WOEID.
  * Set the switch to "SET" position
  * Plug the power supply
  * On your device connect to WIFI "SHEDA_CFG" with password "12345678"
@@ -66,7 +68,7 @@ The pin header on the right of the board (switch is on the left) is separated as
 
 **UART 3v3 (9600N1): /!\ Beware of using TTL uart it may destroy the esp8266, use "voltage divisor bridge" before the pin 4**
 
-* 4: RX (connect TX of your UART adapter) 
+* 4: RX (connect TX of your UART adapter)
 * 5: TX (connect RX of your uart adapter)
 * 6: GND (connect GND of your uart adapter)
 
@@ -132,7 +134,46 @@ The pin header on the right of the board (switch is on the left) is separated as
 
 ---
 
-4 - More info:
+4 - NodeMcu firmware & Lua Programmation:
+=========================
+
+a - Flash NodeMCU firmware
+
+The NodeMCU firware come with a lot of built-in module that are expensive in term of program memory using. To get more space for our luas program files we will get custom build.
+We need the following module installed: node,file,gpio,wifi,net,pwm,tmr,mqtt,cjson
+
+Cool feature: Build online NodeMcu firmware:  
+[http://nodemcu-build.com/](http://nodemcu-build.com/)
+
+Get the ESP8266 flasher:  
+[https://github.com/nodemcu/nodemcu-flasher](https://github.com/nodemcu/nodemcu-flasher)
+
+To Flash the NodeMCU Firmware ESP8266-01:
+- Shunt GPIO0 to GND so as to the module became in flash mode (so use position 2 of jumper 0)
+- Connect the serial UART wiring (mind that TX UART must be connected to RX ESP8266, and the oposite Rx UART and TX ESP8266)
+- PowerOn the Board
+- Launch the flasher and select the firmware in the config tab.
+- Press Flash
+- You should See the MAC of this chip apearing and the progress bar moving
+
+b - Programme LUAs scripts
+
+To programme LUA script inside the chip we will use ESPlorer, this software ease the programmation and debug of LUAs scripts.  
+[http://esp8266.ru/esplorer/#download](http://esp8266.ru/esplorer/#download)
+>i: But from this point we could completly use a terminal and make execute diretly lua line by directly writing those
+
+To Programme:
+- First change your MQTT information in cmqtt.lua file(broker url, userid, password, etc)
+- Disconnect GPIO0 from GND! We are not flashing firmware anymore, discussing with the firmware.
+- Connect UART
+- Power on
+- i: You should see header of NodeMcu and fail message looking for init.lua
+- From that point send every files .lua and send also "settings" and "pos_settings".
+- /!\ if you got error during the flash this may be due to ESP8266 trying to print some character over serial while programming this may create error, juste reboot and continue flashing
+
+---
+
+5 - More info:
 =====================
 
 * [MQTT](https://en.wikipedia.org/wiki/MQTT)
